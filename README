@@ -1,4 +1,4 @@
-Term project :: li - Lisp Interpreter
+Term project :: li - Lisp Interpreter in Haskell
 
 Group Members ::
 
@@ -6,3 +6,11 @@ Group Members ::
 2. Rohit Agrawalla
 3. Sourav Dutta
 
+Request ::
+
+Please do insert proper comments for the code changes that one makes.
+Will help a lot in keeping track of things.
+
+Moreover checkin the sources after testing and being certain of what to check in.
+
+Enjoy Haskelling... 
