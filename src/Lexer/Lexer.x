@@ -1,7 +1,7 @@
 {
-module Main  where
+module Lexer.Lexer  where
 
-import SNumbers
+import Text.ParserCombinators.Parsec.Pos
 }
 
 
@@ -197,13 +197,13 @@ $white+					;
 -- Some action helpers:
 
 -- The token type:
-type Tok   = (Pos, Token)
-type Pos   = (Int, Int)
+type Token   = (SourcePos, Tok)
 
-fromAlexPosn :: AlexPosn -> Pos
-fromAlexPosn (AlexPn _ line col) = (line, col)
 
-data Token = SyntacticKeyWord String		| 
+fromAlexPosn :: AlexPosn -> SourcePos
+fromAlexPosn (AlexPn _ line col) = newPos "" line col
+
+data Tok   = SyntacticKeyWord String		| 
      	     Identifer        String         	| 
      	     Boolean  	      Bool  	     	| 
 	     Number  	      SNumber 	     	| 
@@ -216,8 +216,10 @@ data Token = SyntacticKeyWord String		|
 	     Dot				
 	     deriving (Eq,Show)
 
-main = do
-  s <- getContents
-  print (alexScanTokens s)
+
+data SNumber = SInt Int deriving (Show, Eq)
+
+toInt :: String -> SNumber
+toInt str = SInt (read str)
 
 }
