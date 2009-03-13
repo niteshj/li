@@ -2,6 +2,7 @@
 module Lexer.Lexer  where
 
 import Text.ParserCombinators.Parsec.Pos
+import Data.List as L
 }
 
 
@@ -173,22 +174,21 @@ tokens :-
 
 $white+					;
 --@interTokenSpace			;
-@syntacticKeyword			{ \p s -> (fromAlexPosn p, SyntacticKeyWord s)	}
-@identifier				{ \p s -> (fromAlexPosn p, Identifer s)         }
+@syntacticKeyword			{ \p s -> (fromAlexPosn p, SyntacticKeyWord s)			}
+@identifier				{ \p s -> (fromAlexPosn p, Identifer s)				}
 @boolean				{ \p s -> if (s == "#t") || (s == "#T")
 					       	  then (fromAlexPosn p, Boolean True)
 						  else (fromAlexPosn p, Boolean False)  
-				        }
-@number					{ \p s -> (fromAlexPosn p, Number  (toInt s))	}
-@character				{ \p s -> (fromAlexPosn p, Character $ head s) 	}
-@string					{ \p s -> (fromAlexPosn p, SString s) }
+													}
+@number					{ \p s -> (fromAlexPosn p, Number  (toInt s))			}
+@character				{ \p s -> (fromAlexPosn p, Character $ handleCharacter s)	}
+@string					{ \p s -> (fromAlexPosn p, SString s)  		       		}
 
-\(					{ \p s -> (fromAlexPosn p, OpenParen)		}
-\)					{ \p s -> (fromAlexPosn p, CloseParen)		}
-\'					{ \p s -> (fromAlexPosn p, SingleQuote)		}	
-\,					{ \p s -> (fromAlexPosn p, Comma) 		}	
-\.					{ \p s -> (fromAlexPosn p, Dot)        		} 
-
+\(					{ \p s -> (fromAlexPosn p, OpenParen)				}
+\)					{ \p s -> (fromAlexPosn p, CloseParen)				}
+\'					{ \p s -> (fromAlexPosn p, SingleQuote)				}
+\,					{ \p s -> (fromAlexPosn p, Comma) 				}
+\.					{ \p s -> (fromAlexPosn p, Dot)        				}
 
 
 {
@@ -221,5 +221,11 @@ data SNumber = SInt Int deriving (Show, Eq)
 
 toInt :: String -> SNumber
 toInt str = SInt (read str)
+
+handleCharacter :: String -> Char
+handleCharacter str | "space" `L.isSuffixOf` str   = ' '
+		    | "newline" `L.isSuffixOf` str = '\n'
+		    | otherwise		           = last str
+
 
 }
