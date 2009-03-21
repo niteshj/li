@@ -35,7 +35,7 @@ type Formals = [Variable]
 data Body = Body Definitions Sequence
             deriving Show
 
--- TODOC
+-- Sequence definition
 newtype Sequence = Seq [Command] Exp
 
 type Command = Exp
@@ -213,7 +213,7 @@ bodyParser = do defs <- definitionsParser
                 seq  <- sequenceParser
                 return $ Body defs seq
 
--- hack :: TODOC
+-- Sequence Parser 
 sequenceParser :: MyParser Sequence
 sequenceParser = do cmd <- many commandParser
 		    exp <- expParser
