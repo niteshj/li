@@ -36,7 +36,7 @@ data Body = Body Definitions Sequence
             deriving Show
 
 -- TODOC
-type Sequence = [Exp]
+newtype Sequence = Seq [Command] Exp
 
 type Command = Exp
 
@@ -214,8 +214,10 @@ bodyParser = do defs <- definitionsParser
                 return $ Body defs seq
 
 -- hack :: TODOC
-sequenceParser :: MyParser [Exp]
-sequenceParser = many1 expParser
+sequenceParser :: MyParser Sequence
+sequenceParser = do cmd <- many commandParser
+		    exp <- expParser
+		    return $ Seq cmd exp 
 
 commandParser :: MyParser Exp
 commandParser = expParser
