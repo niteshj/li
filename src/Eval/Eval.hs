@@ -51,6 +51,36 @@ eval (CCommand (EVariable var)) = do context <- get
                      Nothing -> throwError ("Symbol " ++ var ++ " is undefined")
                      (Just parent) -> lookupSymbol parent
 
+eval (CCommand (ELambda formals  body)) = return $ ELambda formals body
+
+ 
+-- To evaluate ProCall
+-- First get the operator and operands
+-- We evaluate the operator, the result of which should be a lambda expression else error
+-- Then evaluate the arguments
+-- apply lambda expression onto the body
+
+eval (CCommand (EPCall procedure)) = do let fun  = operator procedure
+                                            args = operands procedure
+                                        lambdaExpr <- eval $ CCommand fun
+                                        evaledArgs <- mapM eval $ map CCommand args
+                                        apply lambdaExpr evaledArgs
+    where apply (ELambda formals (Body defs exps)) evaledArgs = do let zippedArgs = zip formals evaledArgs
+                                                                   pushArgs zippedArgs
+                                                                   mapM eval (map CDefinition defs)
+                                                                   result <- mapM eval (map CCommand exps)
+                                                                   context <- get
+                                                                   put $ popContext context
+                                                                   return $ last result
+                                                       
+          pushArgs zippedArgs = do context <- get
+                                   put $ pushContext context 
+                                   mapM (uncurry updateSymbol) zippedArgs 
+                                   return ()
+  
+
+
+
 -- Comes last in the eval
 eval _ = throwError "bas karo bhai"
 

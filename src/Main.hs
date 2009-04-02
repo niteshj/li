@@ -31,7 +31,7 @@ repl = do
                       let evaledProgramOutput = show evaledProgram
                       if (null evaledProgramOutput)  
                          then return ()
-                         else liftIO $ putStrLn $ "li > " ++ evaledProgramOutput -- evaledProgram :: Exp
+                         else liftIO $ putStrLn $ evaledProgramOutput -- evaledProgram :: Exp
                              
                       repl        
 

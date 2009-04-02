@@ -294,7 +294,7 @@ instance Show Exp where
     show (EVariable var)    = var
     show (ELiteral literal) = show literal
     show (EPCall procedure) = show procedure
-    show (ELambda _ _)      = ""
+    show (ELambda _ _)      = "#<procedure>"
     show (ENone)            = ""
 
 
@@ -306,6 +306,6 @@ instance Show Literal where
 
 
 instance Show ProCall where
-    show _ = "<procedure>"
+    show _ = "#<procedure>"
 
 

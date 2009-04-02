@@ -9,4 +9,9 @@ implemented the parser for it.
 Implemented the readline support for the interpreter.
 Also decided and implemented part of the expression evaluation.
 
+
+02-04-2009
+Implemented lambda abstraction
+
+
 R5RS Scheme details :: http://www.schemers.org/Documents/Standards/R5RS/
