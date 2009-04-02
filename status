@@ -1,0 +1,9 @@
+Currently the lexer has been implemented which works according to the
+stards defined by R5RS Scheme Report
+
+12-03-2009
+Having taken a subset of the Expression defines in R5RS standard we have 
+implemented the parser for it.
+
+
+R5RS Scheme details :: http://www.schemers.org/Documents/Standards/R5RS/
