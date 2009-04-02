@@ -5,5 +5,9 @@ stards defined by R5RS Scheme Report
 Having taken a subset of the Expression defines in R5RS standard we have 
 implemented the parser for it.
 
+02-04-2009
+Implemented the readline support for the interpreter.
+Also decided and implemented part of the expression evaluation.
+
 
 R5RS Scheme details :: http://www.schemers.org/Documents/Standards/R5RS/

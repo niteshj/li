@@ -21,41 +21,24 @@ main = do
 repl :: StateT Context SError ()
 repl = do 
   liftIO $ hFlush stdout
-  line <- liftIO $ readline "> "
+  line <- liftIO $ readline "li > "
   case line of
     Nothing  -> return ()
     Just "(quit)" -> return ()
     Just line   -> do liftIO $ addHistory line
                       let program = parse programParser "fail" (alexScanTokens line)
                       evaledProgram <- case program of
-                                         Left err   -> throwError "error"
+                                         Left err   -> throwError "Parse error"
                                          Right prgm -> eval prgm
-                      liftIO $ putStrLn $ show evaledProgram -- evaledProgram :: Exp
+                      let evaledProgramOutput = show evaledProgram
+                      if (null evaledProgramOutput)  
+                         then return ()
+                         else liftIO $ putStrLn $ "li > " ++ evaledProgramOutput -- evaledProgram :: Exp
+                             
                       repl        
 
                   `catchError` (\e -> do liftIO $ putStrLn e 
                                          repl)
 
-
-
--- evalTest :: String -> Datum
--- evalTest prg = case parse programParser "fail" (alexScanTokens prg) of 
---                  Left err   -> (SDatum $ SDString $ "Parse error:\n" ++ (show err))
---                  Right prgm -> eval prgm
-
--- program = "nite"
-
--- main = runErrorT (evalStateT readEvalPrintLoop initialCtx)
-
--- --main = putStrLn $ show $ evalTest program
-
--- readEvalPrintLoop :: IO ()
--- readEvalPrintLoop = do
---   maybeLine <- liftIO $ readline "li > "
---   case maybeLine of 
---     Nothing     -> return () -- EOF / control-d
---     Just "exit" -> return ()
---     Just line -> do addHistory line
---                     liftIO $ putStrLn $ "The user input: " ++ (show line)
---                     readEvalPrintLoop
-
+        
+    

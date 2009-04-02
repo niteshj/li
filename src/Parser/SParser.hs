@@ -9,7 +9,7 @@ type Program = CmdOrDef
 
 data CmdOrDef = CCommand Command
               | CDefinition Definition
-                deriving Show
+
 
 type Command = Exp
 
@@ -18,7 +18,7 @@ data Exp = EVariable Variable
          | EPCall ProCall
          | ELambda Formals Body
          | ENone                     -- We need this only for eval
-           deriving Show
+
 
 type Variable = String
 
@@ -26,22 +26,22 @@ data Literal = LBool Bool
              | LNum Int
              | LChar Char
              | LString String
-               deriving Show
+
 
 data ProCall = ProCall { operator :: Exp, operands :: [Exp] }
-             deriving Show
+
 
 type Formals = [Variable] 
 
 data Body = Body Definitions Sequence
-            deriving Show
+
 
 type Definitions = [Definition]
 
 data Definition = Define1 Variable Exp
                 | Define2 Variable DefFormals Body
                 | Define3 Definitions
-                  deriving Show
+
 
 type DefFormals = [Variable]
 
@@ -296,4 +296,24 @@ cmdOrDefParser = try (do cmd <- commandParser
 -- 02-04-2009
 -- TODO :: Add EndOfInput to the input token stream which the parser will use.       
              
+
+
+instance Show Exp where
+    show (EVariable var)    = var
+    show (ELiteral literal) = show literal
+    show (EPCall procedure) = show procedure
+    show (ELambda _ _)      = ""
+    show (ENone)            = ""
+
+
+
+instance Show Literal where
+    show (LBool b)     = if b == True then "#t" else "#f"
+    show (LNum num)       = show num
+    show (LString string) = string
+
+
+instance Show ProCall where
+    show _ = "<procedure>"
+
 
