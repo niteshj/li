@@ -1,0 +1,7 @@
+*.o
+*.hi
+Main
+*~
+tags
+TAGS
+cscope*

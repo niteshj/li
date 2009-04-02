@@ -5,62 +5,66 @@ import Text.ParserCombinators.Parsec.Prim
 import Text.ParserCombinators.Parsec.Pos
 import Lexer.Lexer
 
+type Program = CmdOrDef
+
+data CmdOrDef = CCommand Command
+              | CDefinition Definition
+
+
+type Command = Exp
+
+data Exp = EVariable Variable
+         | ELiteral Literal
+         | EPCall ProCall
+         | ELambda Formals Body
+         | ENone                     -- We need this only for eval
+
+type Variable = String
+
+data Literal = LBool Bool
+             | LNum Int
+             | LChar Char
+             | LString String
+
+data ProCall = ProCall { operator :: Exp, operands :: [Exp] }
+
+type Formals = [Variable] 
+
+data Body = Body Definitions Sequence
+
+type Definitions = [Definition]
+
+data Definition = Define1 Variable Exp
+                | Define2 Variable DefFormals Body
+                | Define3 Definitions
+
+type DefFormals = [Variable]
+
+type Sequence = [Exp]
+
+
+-- Datum definitions start
+
 data Datum = SDatum SimpleDatum 
-             deriving Show
 
 data SimpleDatum = SDBoolean Bool
                  | SDNumber Int
                  | SDChar Char
                  | SDString String
                  | SDIdentifier String 
-                   deriving Show
 
-data Exp = EVariable Variable
-         | ELiteral Literal
-         | EPCall ProCall
-         | ELambda Formals Body
-           deriving Show
+instance Show Datum where
+    show (SDatum datum) = show datum
 
-data Literal = LBool Bool
-             | LNum Int
-             | LChar Char
-             | LString String
-               deriving Show
+instance Show SimpleDatum where
+    show sd = case sd of 
+                SDBoolean b     -> if b == True then "#t" else "#f"
+                SDNumber n      -> show n
+                SDChar c        -> show c
+                SDString s      -> s
+                SDIdentifier id -> id      
 
-data ProCall = ProCall { operator :: Exp, operands :: [Exp] }
-             deriving Show
-
-type Formals = [Variable] 
-
-data Body = Body Definitions Sequence
-            deriving Show
-
--- Sequence definition
-newtype Sequence = Seq [Command] Exp
-
-type Command = Exp
-
-type Variable = String
-
--- Program 
-type Program = CmdOrDef
-
-data CmdOrDef = CCommand Command
-              | CDefinition Definition
-              | CBegin [CmdOrDef]
-                deriving Show
-
-data Definition = Define1 Variable Exp
-                | Define2 Variable DefFormals Body
-                | Define3 Definitions
-                  deriving Show
-
-type Definitions = [Definition]
-
-type DefFormals = [Variable]
-
-
-
+-- Parser starts here
 type MyParser a   = GenParser Token () a
 
 mytoken :: (Tok -> Maybe a) -> MyParser a
@@ -213,11 +217,9 @@ bodyParser = do defs <- definitionsParser
                 seq  <- sequenceParser
                 return $ Body defs seq
 
--- Sequence Parser 
-sequenceParser :: MyParser Sequence
-sequenceParser = do cmd <- many commandParser
-		    exp <- expParser
-		    return $ Seq cmd exp 
+-- hack :: TODOC
+sequenceParser :: MyParser [Exp]
+sequenceParser = many1 expParser
 
 commandParser :: MyParser Exp
 commandParser = expParser
@@ -233,7 +235,7 @@ definitionParser = try (do openParenParser
 
                    <|> try (do openParenParser
                                "define" <- syntacticKeywordParser
-                               openParenParser 
+                               openParenParser
                                var <- variableParser
                                defFormals <- defFormalsParser
                                closeParenParser
@@ -247,7 +249,7 @@ definitionParser = try (do openParenParser
                            return $ Define3 defs)
 
 definitionsParser :: MyParser Definitions                       
-definitionsParser = many definitionParser         
+definitionsParser = many $ try definitionParser         
 
 proCallParser :: MyParser ProCall
 proCallParser = do openParenParser
@@ -281,10 +283,29 @@ cmdOrDefParser :: MyParser CmdOrDef
 cmdOrDefParser = try (do cmd <- commandParser
                          return $ CCommand cmd)
 
-                 <|> try (do def <- definitionParser
-                             return $ CDefinition def)
-                 
-                 <|> (do cmdOrDefs <- many cmdOrDefParser
-                         return $ CBegin cmdOrDefs)
+                 <|> (do def <- definitionParser
+                         return $ CDefinition def)
+
+
+-- 02-04-2009
+-- TODO :: Add EndOfInput to the input token stream which the parser will use.       
+
+instance Show Exp where
+    show (EVariable var)    = var
+    show (ELiteral literal) = show literal
+    show (EPCall procedure) = show procedure
+    show (ELambda _ _)      = ""
+    show (ENone)            = ""
+
+
+
+instance Show Literal where
+    show (LBool b)     = if b == True then "#t" else "#f"
+    show (LNum num)       = show num
+    show (LString string) = string
+
+
+instance Show ProCall where
+    show _ = "<procedure>"
 
 
