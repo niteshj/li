@@ -5,8 +5,11 @@ import Text.ParserCombinators.Parsec
 import qualified Data.Map as Map
 import Control.Monad.State
 import Control.Monad.Error
+import Data.List
 
 
+-- import Eval.Library
+import Debug.Trace
 
 -- Context in which expressions will be evaluated
 type SymbolTable = Map.Map String Exp
@@ -29,7 +32,15 @@ popContext ctx@(Ctx _ Nothing) = ctx
 popContext (Ctx _ (Just parentCtx)) = parentCtx
 
 
-initialCtx = Ctx (Map.singleton "initial" ENone) Nothing
+initialCtx = Ctx (Map.fromList 
+                              [("+", (EVariable "+")),
+                               ("-", (EVariable "-")),
+                               ("*", (EVariable "*")),
+                               ("/", (EVariable "/")),
+                               ("if", (EVariable "if")),
+                               ("=", (EVariable "="))
+                              ])                               
+                              Nothing
 
 
 eval :: Program -> StateT Context SError Exp
@@ -57,99 +68,53 @@ eval (CCommand (ELambda formals  body)) = return $ ELambda formals body
 -- To evaluate ProCall
 -- First get the operator and operands
 -- We evaluate the operator, the result of which should be a lambda expression else error
--- Then evaluate the arguments
--- apply lambda expression onto the body
+-- Then lazily evaluate the arguments, lazily to take care or recursion
+-- apply lambda expression on the body
 
 eval (CCommand (EPCall procedure)) = do let fun  = operator procedure
                                             args = operands procedure
                                         lambdaExpr <- eval $ CCommand fun
-                                        evaledArgs <- mapM eval $ map CCommand args
+                                        let evaledArgs = args
                                         apply lambdaExpr evaledArgs
-    where apply (ELambda formals (Body defs exps)) evaledArgs = do let zippedArgs = zip formals evaledArgs
-                                                                   pushArgs zippedArgs
-                                                                   mapM eval (map CDefinition defs)
-                                                                   result <- mapM eval (map CCommand exps)
-                                                                   context <- get
-                                                                   put $ popContext context
-                                                                   return $ last result
-                                                       
-          pushArgs zippedArgs = do context <- get
-                                   put $ pushContext context 
+
+    where apply (ELambda formals (Body defs exps)) args = do evaledArgs <- mapM eval $ map CCommand args
+                                                             let zippedArgs = zip formals evaledArgs
+                                                             pushArgs zippedArgs
+                                                             mapM eval (map CDefinition defs)
+                                                             result <- mapM eval (map CCommand exps)
+                                                             modify popContext
+                                                             return $ last result
+          apply (EVariable str) evaledArgs = evalLibraryFunction str evaledArgs
+          apply _ _                        = throwError "strange function apply error"
+
+          pushArgs zippedArgs = do modify pushContext
                                    mapM (uncurry updateSymbol) zippedArgs 
-                                   return ()
+                                   
   
-
-
-
 -- Comes last in the eval
 eval _ = throwError "bas karo bhai"
 
 
-{-
+evalLibraryFunction "+" evaledArgs = do args <- (mapM eval $ map CCommand evaledArgs)
+                                        let numList = map (\(ELiteral (LNum num)) -> num) args
+                                        return $ ELiteral $ LNum $ foldl1' (+) numList
 
-eval (BlaiseSymbol s) = do context <- get
-                           lookupSymbol context
-    where lookupSymbol (Ctx sym_table parentCtx) =
-              if s `Map.member` sym_table == True
-              then return (sym_table Map.! s)
-              else case parentCtx of
-                     Nothing -> throwError ("Symbol " ++ s ++ " is unbound.")
-                     (Just parent) -> lookupSymbol parent
+evalLibraryFunction "-" evaledArgs = do args <- (mapM eval $ map CCommand evaledArgs)
+                                        let numList = map (\(ELiteral (LNum num)) -> num) args
+                                        return $ ELiteral $ LNum $ foldl1' (-) numList
 
-type Program = CmdOrDef
+evalLibraryFunction "*" evaledArgs = do args <- (mapM eval $ map CCommand evaledArgs)
+                                        let numList = map (\(ELiteral (LNum num)) -> num) args
+                                        return $ ELiteral $ LNum $ foldl1' (*) numList
 
-data CmdOrDef = CCommand Command
-              | CDefinition Definition
-                deriving Show
+evalLibraryFunction "/" evaledArgs = do let numList = map (\(ELiteral (LNum num)) -> num) evaledArgs
+                                        return $ ELiteral $ LNum $ foldl1' (div) numList
 
-type Command = Exp
-
-data Exp = EVariable Variable
-         | ELiteral Literal
-         | EPCall ProCall
-         | ELambda Formals Body
-           deriving Show
-
-type Variable = String
-
-data Literal = LBool Bool
-             | LNum Int
-             | LChar Char
-             | LString String
-               deriving Show
-
-data ProCall = ProCall { operator :: Exp, operands :: [Exp] }
-             deriving Show
-
-type Formals = [Variable] 
-
-data Body = Body Definitions Sequence
-            deriving Show
-
-type Definitions = [Definition]
-
-data Definition = Define1 Variable Exp
-                | Define2 Variable DefFormals Body
-                | Define3 Definitions
-                  deriving Show
-
-type DefFormals = [Variable]
-
-type Sequence = [Exp]
+evalLibraryFunction "=" evaledArgs = do [n1, n2] <- (mapM eval $ map CCommand evaledArgs)
+                                        return $ ELiteral $ LBool (n1 == n2)
 
 
--- Datum definitions start
-
-data Datum = SDatum SimpleDatum 
-
-data SimpleDatum = SDBoolean Bool
-                 | SDNumber Int
-                 | SDChar Char
-                 | SDString String
-                 | SDIdentifier String 
-
-
--}
-
-
-
+evalLibraryFunction "if" [boolExpr, yesExpr, noExpr] = do (ELiteral (LBool boolEvaled)) <- eval $ CCommand boolExpr
+                                                          if boolEvaled == True 
+                                                            then eval $ CCommand yesExpr 
+                                                            else eval $ CCommand noExpr

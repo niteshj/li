@@ -36,7 +36,7 @@ $specialSubsequent	= [\+\-\.\@]
 
 @identifier 	   	= @initial @subsequent* | @peculiarIdentifier 
 
-@expressionKeyword 	= [qQ][uU][oO][tT][eE] | [lL][aA][mM][bB][dD][aA] | [iI][fF] | [sS][eE][tT]! | 
+@expressionKeyword 	= [qQ][uU][oO][tT][eE] | [lL][aA][mM][bB][dD][aA] | [sS][eE][tT]! | 
 			  [bB][eE][gG][iI][nN] | [cC][oO][nN][dD] | [aA][nN][dD] | [oO][rR] | [cC][aA][sS][eE] |
 			  [lL][eE][tT] | [lL][eE][tT]\* | [lL][eE][tT][rR][eE][cC] | [dD][oO] | [dD][eE][lL][aA][yY] |
 			  [qQ][uU][aA][sS][iI][qQ][uU][oO][tT][eE]

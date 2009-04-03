@@ -9,7 +9,43 @@ type Program = CmdOrDef
 
 data CmdOrDef = CCommand Command
               | CDefinition Definition
+                deriving (Show, Eq)
 
+type Command = Exp
+
+data Exp = EVariable Variable
+         | ELiteral Literal
+         | EPCall ProCall
+         | ELambda Formals Body
+         | ENone                     -- We need this only for eval
+           deriving (Show, Eq)
+
+type Variable = String
+
+data Literal = LBool Bool
+             | LNum Int
+             | LChar Char
+             | LString String
+               deriving (Show, Eq)
+
+data ProCall = ProCall { operator :: Exp, operands :: [Exp] }  deriving (Show, Eq)
+
+type Formals = [Variable] 
+
+data Body = Body Definitions Sequence                 deriving (Show, Eq)
+
+type Definitions = [Definition]
+
+data Definition = Define1 Variable Exp
+                | Define2 Variable DefFormals Body
+                | Define3 Definitions
+                  deriving (Show, Eq)
+                         
+type DefFormals = [Variable]
+
+type Sequence = [Exp]
+
+{-
 
 type Command = Exp
 
@@ -53,16 +89,8 @@ data SimpleDatum = SDBoolean Bool
                  | SDString String
                  | SDIdentifier String 
 
-instance Show Datum where
-    show (SDatum datum) = show datum
 
-instance Show SimpleDatum where
-    show sd = case sd of 
-                SDBoolean b     -> if b == True then "#t" else "#f"
-                SDNumber n      -> show n
-                SDChar c        -> show c
-                SDString s      -> s
-                SDIdentifier id -> id      
+-}
 
 -- Parser starts here
 type MyParser a   = GenParser Token () a
@@ -128,42 +156,6 @@ dotParser :: MyParser ()
 dotParser = mytoken (\tok -> case tok of
                                        Dot -> Just ()
                                        _     -> Nothing )
-
--- Parsers for SimpleDatum
-simpleDatumParser :: MyParser SimpleDatum
-simpleDatumParser = try sdBooleanParser
-                    <|> try sdNumberParser
-                    <|> try sdCharParser
-                    <|> try sdStringParser
-                    <|> sdIdentifierParser
-
-sdBooleanParser :: MyParser SimpleDatum
-sdBooleanParser = do bool <- booleanParser
-                     return $ SDBoolean bool
-
-sdNumberParser :: MyParser SimpleDatum
-sdNumberParser =  do numS <- numberParser 
-                     let num = fromSNumber numS
-                     return $ SDNumber num
-
-
-sdCharParser :: MyParser SimpleDatum
-sdCharParser = do c <- characterParser
-                  return $ SDChar c
-
-sdStringParser :: MyParser SimpleDatum
-sdStringParser = do str <- sstringParser
-                    return $ SDString str
-
-sdIdentifierParser :: MyParser SimpleDatum
-sdIdentifierParser = do str <- identiferParser
-                        return $ SDIdentifier str
-
--- Datum parser
-datumParser :: MyParser Datum
-datumParser = do simpleDatum <- simpleDatumParser
-                 return $ SDatum simpleDatum
-
 
 fromSNumber :: SNumber -> Int
 fromSNumber (SInt n) = n
@@ -274,6 +266,7 @@ lambdaParser = do openParenParser
                   "lambda" <- syntacticKeywordParser
                   formals  <- formalsParser
                   body     <- bodyParser
+                  closeParenParser
                   return $ ELambda formals body
 
 programParser :: MyParser Program
@@ -289,7 +282,7 @@ cmdOrDefParser = try (do cmd <- commandParser
 
 -- 02-04-2009
 -- TODO :: Add EndOfInput to the input token stream which the parser will use.       
-
+{-
 instance Show Exp where
     show (EVariable var)    = var
     show (ELiteral literal) = show literal
@@ -309,3 +302,4 @@ instance Show ProCall where
     show _ = "#<procedure>"
 
 
+-}
