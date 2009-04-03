@@ -5,6 +5,10 @@ import Text.ParserCombinators.Parsec.Prim
 import Text.ParserCombinators.Parsec.Pos
 import Lexer.Lexer
 
+{- 
+
+-- For Debug Purpose only
+
 type Program = CmdOrDef
 
 data CmdOrDef = CCommand Command
@@ -45,7 +49,15 @@ type DefFormals = [Variable]
 
 type Sequence = [Exp]
 
-{-
+-}
+
+
+type Program = CmdOrDef
+
+data CmdOrDef = CCommand Command
+              | CDefinition Definition
+                deriving Eq   
+
 
 type Command = Exp
 
@@ -54,6 +66,8 @@ data Exp = EVariable Variable
          | EPCall ProCall
          | ELambda Formals Body
          | ENone                     -- We need this only for eval
+           deriving Eq   
+                
 
 type Variable = String
 
@@ -61,36 +75,28 @@ data Literal = LBool Bool
              | LNum Int
              | LChar Char
              | LString String
+               deriving Eq   
 
-data ProCall = ProCall { operator :: Exp, operands :: [Exp] }
+data ProCall = ProCall {  operator :: Exp, 
+                          operands :: [Exp] 
+                       }  deriving Eq   
 
 type Formals = [Variable] 
 
-data Body = Body Definitions Sequence
+data Body = Body Definitions Sequence            deriving Eq   
 
 type Definitions = [Definition]
 
 data Definition = Define1 Variable Exp
                 | Define2 Variable DefFormals Body
                 | Define3 Definitions
+                  deriving Eq   
 
 type DefFormals = [Variable]
 
 type Sequence = [Exp]
 
 
--- Datum definitions start
-
-data Datum = SDatum SimpleDatum 
-
-data SimpleDatum = SDBoolean Bool
-                 | SDNumber Int
-                 | SDChar Char
-                 | SDString String
-                 | SDIdentifier String 
-
-
--}
 
 -- Parser starts here
 type MyParser a   = GenParser Token () a
@@ -282,7 +288,9 @@ cmdOrDefParser = try (do cmd <- commandParser
 
 -- 02-04-2009
 -- TODO :: Add EndOfInput to the input token stream which the parser will use.       
-{-
+
+
+
 instance Show Exp where
     show (EVariable var)    = var
     show (ELiteral literal) = show literal
@@ -301,5 +309,3 @@ instance Show Literal where
 instance Show ProCall where
     show _ = "#<procedure>"
 
-
--}
