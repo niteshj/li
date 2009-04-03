@@ -13,5 +13,7 @@ Also decided and implemented part of the expression evaluation.
 02-04-2009
 Implemented lambda abstraction
 
+03-04-2009
+Implementes recursion
 
 R5RS Scheme details :: http://www.schemers.org/Documents/Standards/R5RS/
