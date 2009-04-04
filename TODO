@@ -1,0 +1,9 @@
+TODOs
+
+1. Error Handling
+2. Code Cleanup + Documentation
+3. Implement source file as input and produce result
+4. Implement read input
+5. Implement list, car, cdr
+6. Additional Library support for (set, let)
+
