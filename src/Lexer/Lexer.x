@@ -12,11 +12,11 @@ import Data.List as L
 
 @whitespace 	      	= " "  | \n
 
-@comment 	   	= \;.*\n
+@comment 	   	= \;.* | \;.*\n
 
 @atmosphere 	   	= @whitespace | @comment
 
-@interTokenSpace   	= @atmosphere*
+@interTokenSpace   	= @atmosphere+
 
 @delimeter 	     	= @whitespace 	               	|
 		   	  \( | \) | \" | \;
@@ -172,8 +172,7 @@ $exMarker    	 = [eEsSfFdDlL]
 
 tokens :-
 
-$white+					;
---@interTokenSpace			;
+@interTokenSpace			;
 @syntacticKeyword			{ \p s -> (fromAlexPosn p, SyntacticKeyWord s)			}
 @identifier				{ \p s -> (fromAlexPosn p, Identifer s)				}
 @boolean				{ \p s -> if (s == "#t") || (s == "#T")
