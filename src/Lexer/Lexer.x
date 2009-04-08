@@ -10,7 +10,7 @@ import Data.List as L
 
 
 
-@whitespace 	      	= " "  | \n
+@whitespace 	      	= " "  | \n | \t
 
 @comment 	   	= \;.* | \;.*\n
 

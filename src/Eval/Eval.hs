@@ -38,7 +38,11 @@ initialCtx = Ctx (Map.fromList
                                ("*", (EVariable "*")),
                                ("/", (EVariable "/")),
                                ("if", (EVariable "if")),
-                               ("=", (EVariable "="))
+                               ("=", (EVariable "=")),
+                               ("<", (EVariable "<")),
+                               (">", (EVariable ">")),
+                               ("<=", (EVariable "<=")),
+                               (">=", (EVariable ">="))
                               ])                               
                               Nothing
 
@@ -113,8 +117,21 @@ evalLibraryFunction "/" evaledArgs = do let numList = map (\(ELiteral (LNum num)
 evalLibraryFunction "=" evaledArgs = do [n1, n2] <- (mapM eval $ map CCommand evaledArgs)
                                         return $ ELiteral $ LBool (n1 == n2)
 
+evalLibraryFunction "<" evaledArgs = do [n1, n2] <- (mapM eval $ map CCommand evaledArgs)
+                                        return $ ELiteral $ LBool (n1 < n2)
+
+evalLibraryFunction ">" evaledArgs = do [n1, n2] <- (mapM eval $ map CCommand evaledArgs)
+                                        return $ ELiteral $ LBool (n1 > n2)
+
+evalLibraryFunction "<=" evaledArgs = do [n1, n2] <- (mapM eval $ map CCommand evaledArgs)
+                                         return $ ELiteral $ LBool (n1 <= n2)
+
+evalLibraryFunction ">=" evaledArgs = do [n1, n2] <- (mapM eval $ map CCommand evaledArgs)
+                                         return $ ELiteral $ LBool (n1 >= n2)
 
 evalLibraryFunction "if" [boolExpr, yesExpr, noExpr] = do (ELiteral (LBool boolEvaled)) <- eval $ CCommand boolExpr
                                                           if boolEvaled == True 
                                                             then eval $ CCommand yesExpr 
                                                             else eval $ CCommand noExpr
+
+

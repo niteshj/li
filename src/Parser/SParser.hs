@@ -5,58 +5,12 @@ import Text.ParserCombinators.Parsec.Prim
 import Text.ParserCombinators.Parsec.Pos
 import Lexer.Lexer
 
-{- 
-
--- For Debug Purpose only
 
 type Program = CmdOrDef
 
 data CmdOrDef = CCommand Command
               | CDefinition Definition
-                deriving (Show, Eq)
-
-type Command = Exp
-
-data Exp = EVariable Variable
-         | ELiteral Literal
-         | EPCall ProCall
-         | ELambda Formals Body
-         | ENone                     -- We need this only for eval
-           deriving (Show, Eq)
-
-type Variable = String
-
-data Literal = LBool Bool
-             | LNum Int
-             | LChar Char
-             | LString String
-               deriving (Show, Eq)
-
-data ProCall = ProCall { operator :: Exp, operands :: [Exp] }  deriving (Show, Eq)
-
-type Formals = [Variable] 
-
-data Body = Body Definitions Sequence                 deriving (Show, Eq)
-
-type Definitions = [Definition]
-
-data Definition = Define1 Variable Exp
-                | Define2 Variable DefFormals Body
-                | Define3 Definitions
-                  deriving (Show, Eq)
-                         
-type DefFormals = [Variable]
-
-type Sequence = [Exp]
-
--}
-
-
-type Program = CmdOrDef
-
-data CmdOrDef = CCommand Command
-              | CDefinition Definition
-                deriving Eq   
+                deriving (Eq, Ord)   
 
 
 type Command = Exp
@@ -66,7 +20,7 @@ data Exp = EVariable Variable
          | EPCall ProCall
          | ELambda Formals Body
          | ENone                     -- We need this only for eval
-           deriving Eq   
+           deriving (Eq, Ord)   
                 
 
 type Variable = String
@@ -75,22 +29,22 @@ data Literal = LBool Bool
              | LNum Int
              | LChar Char
              | LString String
-               deriving Eq   
+               deriving (Eq, Ord)   
 
 data ProCall = ProCall {  operator :: Exp, 
                           operands :: [Exp] 
-                       }  deriving Eq   
+                       }  deriving (Eq, Ord)   
 
 type Formals = [Variable] 
 
-data Body = Body Definitions Sequence            deriving Eq   
+data Body = Body Definitions Sequence            deriving (Eq, Ord)   
 
 type Definitions = [Definition]
 
 data Definition = Define1 Variable Exp
                 | Define2 Variable DefFormals Body
                 | Define3 Definitions
-                  deriving Eq   
+                  deriving (Eq, Ord)   
 
 type DefFormals = [Variable]
 
@@ -275,15 +229,16 @@ lambdaParser = do openParenParser
                   closeParenParser
                   return $ ELambda formals body
 
-programParser :: MyParser Program
-programParser = cmdOrDefParser
-
+programParser :: MyParser [Program]
+programParser = many cmdOrDefParser
+                
 cmdOrDefParser :: MyParser CmdOrDef
 cmdOrDefParser = try (do cmd <- commandParser
                          return $ CCommand cmd)
 
                  <|> (do def <- definitionParser
                          return $ CDefinition def)
+
 
 
 -- 02-04-2009
