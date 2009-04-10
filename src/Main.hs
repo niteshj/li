@@ -23,20 +23,22 @@ main = do args <- getArgs
                               return $ Right ()
   
 
-
-
 repl :: StateT Context SError ()
 repl = do 
   liftIO $ hFlush stdout
   line <- liftIO $ readline "li > "
-  case line of
+  newLine <- liftIO $ isLoadFile line
+  case newLine of
     Nothing  -> return ()
     Just "(quit)" -> return ()
+    Just "error::load" -> do liftIO $ putStrLn "Usage: load <filename>"
+                             repl
     Just line   -> do liftIO $ addHistory line
                       evalString line
                       repl
                       
 
+evalString :: String -> StateT Context SError ()
 evalString string = do let scannedTokens = alexScanTokens string
                        if (null scannedTokens)
                          then return ()
@@ -53,3 +55,16 @@ evalString string = do let scannedTokens = alexScanTokens string
                                               
 
 
+-- TODO ::  Add functionality for loading a file in the interpreter
+
+isLoadFile (Just loadCommand) = do let args = words loadCommand
+                                   case (args !! 0) of 
+                                     "load"    -> if length args /= 2 
+                                                  then return $ Just "error::load"
+                                                  else do fileRead <- readFile (args !! 1)
+                                                          addHistory loadCommand
+                                                          putStrLn $ "File Loaded :: " ++ (args !! 1)            
+                                                          return $ Just fileRead
+                                     otherwise -> return $ Just loadCommand 
+                                   
+isLoadFile Nothing = return $ Nothing

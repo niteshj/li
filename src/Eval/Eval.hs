@@ -42,7 +42,8 @@ initialCtx = Ctx (Map.fromList
                                ("<", (EVariable "<")),
                                (">", (EVariable ">")),
                                ("<=", (EVariable "<=")),
-                               (">=", (EVariable ">="))
+                               (">=", (EVariable ">=")),
+                               ("modulo", (EVariable "modulo"))
                               ])                               
                               Nothing
 
@@ -114,24 +115,50 @@ evalLibraryFunction "*" evaledArgs = do args <- (mapM eval $ map CCommand evaled
 evalLibraryFunction "/" evaledArgs = do let numList = map (\(ELiteral (LNum num)) -> num) evaledArgs
                                         return $ ELiteral $ LNum $ foldl1' (div) numList
 
-evalLibraryFunction "=" evaledArgs = do [n1, n2] <- (mapM eval $ map CCommand evaledArgs)
-                                        return $ ELiteral $ LBool (n1 == n2)
+evalLibraryFunction "modulo" evaledArgs
+    | length evaledArgs == 2 = do args <- (mapM eval $ map CCommand evaledArgs)
+                                  let [n1, n2] = map (\(ELiteral (LNum num)) -> num) args
+                                  return $ ELiteral $ LNum $ mod n1 n2
+    | otherwise              = failWithErrorMessage "modulo" "Takes two arguements" 
 
-evalLibraryFunction "<" evaledArgs = do [n1, n2] <- (mapM eval $ map CCommand evaledArgs)
-                                        return $ ELiteral $ LBool (n1 < n2)
 
-evalLibraryFunction ">" evaledArgs = do [n1, n2] <- (mapM eval $ map CCommand evaledArgs)
-                                        return $ ELiteral $ LBool (n1 > n2)
+evalLibraryFunction "=" evaledArgs 
+    | length evaledArgs == 2 = do [n1, n2] <- (mapM eval $ map CCommand evaledArgs)
+                                  return $ ELiteral $ LBool (n1 == n2)
+    | otherwise              = failWithErrorMessage "=" "Currently takes two arguements" 
 
-evalLibraryFunction "<=" evaledArgs = do [n1, n2] <- (mapM eval $ map CCommand evaledArgs)
-                                         return $ ELiteral $ LBool (n1 <= n2)
+evalLibraryFunction "<" evaledArgs 
+    | length evaledArgs == 2 = do [n1, n2] <- (mapM eval $ map CCommand evaledArgs)
+                                  return $ ELiteral $ LBool (n1 < n2)
+    | otherwise              = failWithErrorMessage "<" "Currently takes two arguements" 
 
-evalLibraryFunction ">=" evaledArgs = do [n1, n2] <- (mapM eval $ map CCommand evaledArgs)
-                                         return $ ELiteral $ LBool (n1 >= n2)
 
+evalLibraryFunction ">" evaledArgs
+    | length evaledArgs == 2 = do [n1, n2] <- (mapM eval $ map CCommand evaledArgs)
+                                  return $ ELiteral $ LBool (n1 > n2)
+    | otherwise              = failWithErrorMessage ">" "Currently takes two arguements" 
+
+
+evalLibraryFunction "<=" evaledArgs
+    | length evaledArgs == 2 = do [n1, n2] <- (mapM eval $ map CCommand evaledArgs)
+                                  return $ ELiteral $ LBool (n1 <= n2)
+    | otherwise              = failWithErrorMessage "<=" "Currently takes two arguements" 
+
+evalLibraryFunction ">=" evaledArgs
+    | length evaledArgs == 2 = do [n1, n2] <- (mapM eval $ map CCommand evaledArgs)
+                                  return $ ELiteral $ LBool (n1 >= n2)
+    | otherwise              = failWithErrorMessage ">=" "Currently takes two arguements" 
+
+
+-- For if then else
 evalLibraryFunction "if" [boolExpr, yesExpr, noExpr] = do (ELiteral (LBool boolEvaled)) <- eval $ CCommand boolExpr
                                                           if boolEvaled == True 
                                                             then eval $ CCommand yesExpr 
                                                             else eval $ CCommand noExpr
+-- For if then
+evalLibraryFunction "if" [boolExpr, yesExpr] = do (ELiteral (LBool boolEvaled)) <- eval $ CCommand boolExpr
+                                                  if boolEvaled == True 
+                                                     then eval $ CCommand yesExpr 
+                                                     else return ENone
 
-
+failWithErrorMessage functionName errorString = fail $ functionName ++ " :: " ++ errorString
