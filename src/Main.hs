@@ -3,16 +3,12 @@ module Main where
 import Eval.Eval
 import Lexer.Lexer
 import Parser.SParser
-import Text.ParserCombinators.Parsec
-import Text.ParserCombinators.Parsec.Prim
-import Text.ParserCombinators.Parsec.Pos
-import System.Console.Readline
-
 import System
 import System.IO
 import Control.Monad.State
 import Control.Monad.Error
-
+import System.Console.Readline
+import Text.ParserCombinators.Parsec
 
 main = do args <- getArgs
           case length args of
@@ -21,7 +17,6 @@ main = do args <- getArgs
                               runErrorT (evalStateT (evalString program) initialCtx)
             otherwise   -> do putStrLn $ "Usage is :: li [fileName]"
                               return $ Right ()
-  
 
 repl :: StateT Context SError ()
 repl = do 
