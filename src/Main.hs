@@ -29,13 +29,14 @@ repl = do
   line <- liftIO $ readline "li > "
   newLine <- liftIO $ isLoadFile line
   case newLine of
-    Nothing  -> repl
-    Just "(quit)" -> return ()
+    Nothing            -> return ()
+    Just "(quit)"      -> return ()
     Just "error::load" -> do liftIO $ putStrLn "Usage: load <filename>"
                              repl
-    Just line   -> do liftIO $ addHistory line
-                      evalString line
-                      repl
+    Just "repl"        -> repl
+    Just line          -> do liftIO $ addHistory line
+                             evalString line
+                             repl
                       
 
 evalString :: String -> StateT Context SError ()
@@ -44,7 +45,7 @@ evalString string = do let scannedTokens = alexScanTokens string
                          then return ()
                          else do let programs = parse programParser "liParser" scannedTokens
                                  evaledProgram <- case programs of
-                                                    Left err   -> throwError "Parse error"
+                                                    Left err    -> throwError "Parse error"
                                                     Right prgms -> mapM eval prgms
                                  let evaledProgramOutput = map show evaledProgram
                                  if (null evaledProgramOutput)  
@@ -54,9 +55,7 @@ evalString string = do let scannedTokens = alexScanTokens string
                        `catchError` (\e -> do liftIO $ putStrLn e)
                                               
 
-
--- TODO ::  Add functionality for loading a file in the interpreter
-isLoadFile (Just [])          = return $ Nothing
+isLoadFile (Just [])          = return $ Just "repl"
 
 isLoadFile (Just loadCommand) = do let args = words loadCommand
                                    case (args !! 0) of 

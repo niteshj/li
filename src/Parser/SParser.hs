@@ -146,7 +146,6 @@ lStringParser = do str <- sstringParser
 
 
 -- Exp parser
-
 -- < variable > = < identifer >   -- accn to our lexer
 variableParser :: MyParser Variable
 variableParser = identiferParser
@@ -241,11 +240,6 @@ cmdOrDefParser = try (do cmd <- commandParser
 
 
 
--- 02-04-2009
--- TODO :: Add EndOfInput to the input token stream which the parser will use.       
-
-
-
 instance Show Exp where
     show (EVariable var)    = var
     show (ELiteral literal) = show literal
@@ -253,13 +247,10 @@ instance Show Exp where
     show (ELambda _ _)      = "#<procedure>"
     show (ENone)            = ""
 
-
-
 instance Show Literal where
     show (LBool b)     = if b == True then "#t" else "#f"
     show (LNum num)       = show num
     show (LString string) = string
-
 
 instance Show ProCall where
     show _ = "#<procedure>"

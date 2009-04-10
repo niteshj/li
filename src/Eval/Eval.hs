@@ -8,27 +8,21 @@ import Control.Monad.Error
 import Data.List
 
 
--- import Eval.Library
-import Debug.Trace
-
 -- Context in which expressions will be evaluated
 type SymbolTable = Map.Map String Exp
-data Context = Ctx SymbolTable (Maybe Context)
+data Context     = Ctx SymbolTable (Maybe Context)
 
 -- A state monad that holds a context and an evaluation result
-type SError = ErrorT String IO
+type SError  = ErrorT String IO
 type SResult = StateT Context SError Exp
 
 
 -- Helper context functions
 updateSymbol s eval_e = modify (\(Ctx sym_table parentCtx)->(Ctx (Map.insert s eval_e sym_table)) parentCtx)
 
-updateSymbolInParent s eval_e = modify (\(Ctx sym_table parent_ctx)->(Ctx sym_table (updatedCtx parent_ctx)))
-    where updatedCtx (Just (Ctx sym_table ctx)) = (Just (Ctx (Map.insert s eval_e sym_table) ctx))
-
 pushContext ctx = Ctx Map.empty (Just ctx)
 
-popContext ctx@(Ctx _ Nothing) = ctx
+popContext ctx@(Ctx _ Nothing)      = ctx
 popContext (Ctx _ (Just parentCtx)) = parentCtx
 
 
@@ -69,14 +63,12 @@ eval (CCommand (EVariable var)) = do context <- get
                      (Just parent) -> lookupSymbol parent
 
 eval (CCommand (ELambda formals  body)) = return $ ELambda formals body
-
  
 -- To evaluate ProCall
 -- First get the operator and operands
 -- We evaluate the operator, the result of which should be a lambda expression else error
 -- Then lazily evaluate the arguments, lazily to take care or recursion
 -- apply lambda expression on the body
-
 eval (CCommand (EPCall procedure)) = do let fun  = operator procedure
                                             args = operands procedure
                                         lambdaExpr <- eval $ CCommand fun
@@ -96,11 +88,11 @@ eval (CCommand (EPCall procedure)) = do let fun  = operator procedure
           pushArgs zippedArgs = do modify pushContext
                                    mapM (uncurry updateSymbol) zippedArgs 
                                    
-  
 -- Comes last in the eval
 eval _ = throwError "eval: no evaluation fits for this expression"
 
 
+-- Base Library Support
 evalLibraryFunction "+" evaledArgs = do args <- (mapM eval $ map CCommand evaledArgs)
                                         let numList = map (\(ELiteral (LNum num)) -> num) args
                                         return $ ELiteral $ LNum $ foldl1' (+) numList
