@@ -29,7 +29,7 @@ repl = do
   line <- liftIO $ readline "li > "
   newLine <- liftIO $ isLoadFile line
   case newLine of
-    Nothing  -> return ()
+    Nothing  -> repl
     Just "(quit)" -> return ()
     Just "error::load" -> do liftIO $ putStrLn "Usage: load <filename>"
                              repl
@@ -56,6 +56,7 @@ evalString string = do let scannedTokens = alexScanTokens string
 
 
 -- TODO ::  Add functionality for loading a file in the interpreter
+isLoadFile (Just [])          = return $ Nothing
 
 isLoadFile (Just loadCommand) = do let args = words loadCommand
                                    case (args !! 0) of 

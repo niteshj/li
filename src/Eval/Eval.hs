@@ -37,13 +37,14 @@ initialCtx = Ctx (Map.fromList
                                ("-", (EVariable "-")),
                                ("*", (EVariable "*")),
                                ("/", (EVariable "/")),
-                               ("if", (EVariable "if")),
+                               ("expt", (EVariable "expt")),
+                               ("modulo", (EVariable "modulo")),
                                ("=", (EVariable "=")),
                                ("<", (EVariable "<")),
                                (">", (EVariable ">")),
                                ("<=", (EVariable "<=")),
                                (">=", (EVariable ">=")),
-                               ("modulo", (EVariable "modulo"))
+                               ("if", (EVariable "if"))
                               ])                               
                               Nothing
 
@@ -97,7 +98,7 @@ eval (CCommand (EPCall procedure)) = do let fun  = operator procedure
                                    
   
 -- Comes last in the eval
-eval _ = throwError "bas karo bhai"
+eval _ = throwError "eval: no evaluation fits for this expression"
 
 
 evalLibraryFunction "+" evaledArgs = do args <- (mapM eval $ map CCommand evaledArgs)
@@ -114,6 +115,13 @@ evalLibraryFunction "*" evaledArgs = do args <- (mapM eval $ map CCommand evaled
 
 evalLibraryFunction "/" evaledArgs = do let numList = map (\(ELiteral (LNum num)) -> num) evaledArgs
                                         return $ ELiteral $ LNum $ foldl1' (div) numList
+
+evalLibraryFunction "expt" evaledArgs 
+    | length evaledArgs == 2 = do args <- (mapM eval $ map CCommand evaledArgs)
+                                  let [n1, n2] = map (\(ELiteral (LNum num)) -> num) args
+                                  return $ ELiteral $ LNum $ n1 ^ n2
+    | otherwise              = failWithErrorMessage "expt" "Takes two arguements" 
+
 
 evalLibraryFunction "modulo" evaledArgs
     | length evaledArgs == 2 = do args <- (mapM eval $ map CCommand evaledArgs)
