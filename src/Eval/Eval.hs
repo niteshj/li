@@ -72,8 +72,7 @@ eval (CCommand (ELambda formals  body)) = return $ ELambda formals body
 eval (CCommand (EPCall procedure)) = do let fun  = operator procedure
                                             args = operands procedure
                                         lambdaExpr <- eval $ CCommand fun
-                                        let evaledArgs = args
-                                        apply lambdaExpr evaledArgs
+                                        apply lambdaExpr args
 
     where apply (ELambda formals (Body defs exps)) args = do evaledArgs <- mapM eval $ map CCommand args
                                                              let zippedArgs = zip formals evaledArgs

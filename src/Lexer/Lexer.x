@@ -53,7 +53,7 @@ $specialSubsequent	= [\+\-\.\@]
 @character		= \#\\ [\32-\126] | \#\\ @characterName
 
 
-@stringElement		= [^\"\\] | \" | \\
+@stringElement		= [^\"\\] | \\\" | \\\\
 @string 		= \"@stringElement*\"
 
 
