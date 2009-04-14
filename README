@@ -1,13 +1,14 @@
-Term project :: li - Lisp Interpreter in Haskell
+li - Lisp Interpreter in Haskell
 
-Group Members ::
-y8111024: Nitesh Jha
-y8111034: Rohit Agrawalla
-y8111038: Sourav Dutta
+Currently it supports
+
+1. defining symbols and basic data types
+2. library functions
+3. lambda abstraction
+4. Recursions
 
 
-Compilation:
-1. cd to src
-2. ghc --make Main.hs
+Contributors
 
-Enjoy Haskelling... 
+1. Nitesh :: unofficial.id@gmail.com
+2. Rohit  :: sonuxp@gmail.com 
