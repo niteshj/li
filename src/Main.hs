@@ -57,7 +57,6 @@ isLoadFile (Just loadCommand) = do let args = words loadCommand
                                      "load"    -> if length args /= 2 
                                                   then return $ Just "error::load"
                                                   else do fileRead <- readFile (args !! 1)
-                                                          addHistory loadCommand
                                                           putStrLn $ "File Loaded :: " ++ (args !! 1)            
                                                           return $ Just fileRead
                                      otherwise -> return $ Just loadCommand 
